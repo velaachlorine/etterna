@@ -670,6 +670,7 @@ static LocalizedString GLOBAL_OFFSET_RESET("ScreenDebugOverlay",
 static LocalizedString KEY_CONFIG("ScreenDebugOverlay", "Key Config");
 static LocalizedString CHART_FOLDER("ScreenDebugOverlay", "Chart Folder");
 static LocalizedString CHART_KEY("ScreenDebugOverlay", "Chartkey");
+static LocalizedString FORCE_SNAPS("ScreenDebugOverlay", "ForceSnaps");
 static LocalizedString VOLUME_UP("ScreenDebugOverlay", "Volume Up");
 static LocalizedString VOLUME_DOWN("ScreenDebugOverlay", "Volume Down");
 static LocalizedString UPTIME("ScreenDebugOverlay", "Uptime");
@@ -1608,7 +1609,6 @@ class DebugLineChartkey : public IDebugLine
 		auto c = GAMESTATE->m_pCurSteps;
 		if (c != nullptr) {
 			const auto& ck = c->GetChartKey();
-			Core::Platform::setClipboardText(ck);
 			return ck;
 		}
 		return std::string("None");
@@ -1616,7 +1616,26 @@ class DebugLineChartkey : public IDebugLine
 	std::string GetPageName() const override { return "Misc"; }
 	bool IsEnabled() override { return true; }
 
-	void DoAndLog(std::string& sMessageOut) override {}
+	void DoAndLog(std::string& sMessageOut) override {
+		auto c = GAMESTATE->m_pCurSteps;
+		if (c != nullptr) {
+			const auto& ck = c->GetChartKey();
+			Core::Platform::setClipboardText(ck);
+		}
+	}
+};
+
+class DebugLineForceSnaps : public IDebugLine
+{
+	std::string GetDisplayTitle() override { return FORCE_SNAPS.GetValue(); }
+	std::string GetPageName() const override { return "Misc"; }
+	bool IsEnabled() override { return PREFSMAN->m_bForceSnaps; }
+
+	void DoAndLog(std::string& sMessageOut) override
+	{
+		PREFSMAN->m_bForceSnaps.Set(!PREFSMAN->m_bForceSnaps);
+		IDebugLine::DoAndLog(sMessageOut);
+	}
 };
 
 /* #ifdef out the lines below if you don't want them to appear on certain
@@ -1670,3 +1689,4 @@ DECLARE_ONE(DebugLineGlobalOffsetReset);
 DECLARE_ONE(DebugLineKeyConfig);
 DECLARE_ONE(DebugLineChartFolder);
 DECLARE_ONE(DebugLineChartkey);
+DECLARE_ONE(DebugLineForceSnaps);
